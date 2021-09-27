@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+    <!--自定义日志输出参数-->
+    <!--<conversionRule conversionWord="msg" converterClass="com.herenit.pharmacycloud.log.LogMessageConverter" />-->
+    <!-- 控制台输出 -->
+    <springProperty scope="context" name="logstash-server" source="spring.logstash.server"/>
+    <springProperty scope="context" name="logstash-port" source="spring.logstash.port"/>
+    <springProperty scope="context" name="logstash-service-id" source="spring.logstash.serviceId"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>info</level>
+        </filter>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder" charset="utf8">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) --- [%15.15(%thread)] %cyan(%-40.40(%logger{40})) : %msg%n</pattern>
+        </encoder>
+    </appender>
+    <!-- 按照每天生成日志文件 -->
+   <!-- <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            &lt;!&ndash;日志文件输出的文件名&ndash;&gt;
+            <FileNamePattern>${LOG_HOME}/TestWeb.log.%d{yyyy-MM-dd}.log</FileNamePattern>
+            &lt;!&ndash;日志文件保留天数&ndash;&gt;
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            &lt;!&ndash;格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符&ndash;&gt;
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}  - %msg%n</pattern>
+        </encoder>
+        &lt;!&ndash;日志文件最大的大小&ndash;&gt;
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <MaxFileSize>10MB</MaxFileSize>
+        </triggeringPolicy>
+    </appender>-->
+
+    <!--输出到logstash的appender-->
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <!--自定义过滤规则-->
+        <filter class="com.herenit.mutualupload.log.CustomerLogFilter"></filter>
+        <param name="Encoding" value="UTF-8"/>
+        <remoteHost>${logstash-server}</remoteHost>
+        <port>${logstash-port}</port>
+        <encoder charset="UTF-8" class="net.logstash.logback.encoder.LogstashEncoder" >
+            <customFields>{"serviceId":"${logstash-service-id}"}</customFields>
+            <includeMdcKeyName>startTime</includeMdcKeyName>
+            <includeMdcKeyName>endTime</includeMdcKeyName>
+            <includeMdcKeyName>requestRawJson</includeMdcKeyName>
+            <includeMdcKeyName>responseRawJson</includeMdcKeyName>
+            <includeMdcKeyName>responseTime</includeMdcKeyName>
+            <includeMdcKeyName>url</includeMdcKeyName>
+            <includeMdcKeyName>method</includeMdcKeyName>
+            <includeMdcKeyName>path</includeMdcKeyName>
+        </encoder>
+
+        <!--<encoder class="net.logstash.logback.encoder.LogstashEncoder">-->
+            <!--<throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">-->
+                <!--&lt;!&ndash;正则匹配的日志信息不输出&ndash;&gt;-->
+                <!--<exclude>sun\.reflect\..*\.invoke.*</exclude>-->
+                <!--<exclude>net\.sf\.cglib\.proxy\.MethodProxy\.invoke</exclude>-->
+                <!--<exclude>org.*</exclude>-->
+                <!--<rootCauseFirst>true</rootCauseFirst>-->
+            <!--</throwableConverter>-->
+        <!--</encoder>-->
+    </appender>
+    <!--配置异步日志输出-->
+    <appender name="LOGSTASH-ASYN" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="LOGSTASH"/>
+    </appender>
+
+    <!--不记录启动类下的INFO日志信息-->
+    <!--<logger name="org.hibernate" level="error"/>-->
+    <!--<logger name="org.springframework" level="error"/>-->
+    <!--<logger name="o" level="error"/>-->
+    <!--<logger name="io" level="error"/>-->
+    <!--<logger name="d.s.w.p" level="error"/>-->
+    <!--<logger name="c.n.c.sources" level="error"/>-->
+    <!--<logger name="com.zaxxer.hikari" level="error"/>-->
+
+
+
+    <!-- 日志输出级别 -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="LOGSTASH-ASYN" />
+        <!--<appender-ref ref="FILE" />-->
+    </root>
+
+
+
+</configuration>

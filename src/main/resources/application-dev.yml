@@ -1,0 +1,63 @@
+server:
+  servlet:
+    context-path: /mutual-upload
+  port: 8786
+
+spring:
+  application:
+    name: mutual-upload
+  datasource:
+    druid:
+      username: postgres
+      password: postgres
+      url: jdbc:postgresql://10.8.76.215:5432/cloud_medical_record?stringtype=unspecified&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8&allowMultiQueries=true&useSSL=false&useAffectedRows=true
+      driver-class-name: org.postgresql.Driver
+      # 配置初始化大小（默认0）、最小、最大（默认8）
+      initial-size: 10
+      min-idle: 10
+      max-active: 100
+      # 配置获取连接等待超时的时间
+      max-wait: 5000
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
+  #日志配置
+  logstash:
+    server: 10.10.76.170
+    port: 5506
+    serviceId: mutual-upload-dev
+  # Redis配置（测试）
+  redis:
+    host: 10.10.76.217
+    password: herenit123456
+    database: 5
+    port: 6379
+    timeout: 6000ms
+    jedis:
+      pool:
+        # 最大空闲连接数
+        max-idle: 100
+        # 最小空闲连接数
+        min-idle: 10
+        # 等待可用连接的最大时间，负数为不限制
+        max-wait:  -1s
+        # 最大活跃连接数，负数为不限制
+        max-active: -1
+    #是否缓存空值
+    cache-mull-values: false
+    #缓存过期时间
+#    time-to-live: 100s
+
+#swagger文档配置
+swagger:
+  enabled: true
+  title: 互认基础数据上传服务
+  version: 1.0
+  base-package: com.herenit.mutualupload.facade
+
+#日志配置
+logback:
+  level: INFO
